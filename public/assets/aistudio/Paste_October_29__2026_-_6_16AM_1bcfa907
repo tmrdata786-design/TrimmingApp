@@ -1,0 +1,1211 @@
+PROJECT: TRIMMING PRODUCTION, INVENTORY, QUALITY CONTROL & COST MANAGEMENT SYSTEM
+
+1. YOUR ROLE
+
+Act as a senior software architect, manufacturing ERP consultant, inventory-control specialist, production-planning engineer, database architect, and full-stack developer.
+
+Your task is to design and implement a production-grade web application for a manufacturing company that processes moulded plastic or similar parts through trimming operations.
+
+The application must manage:
+
+- Molding receipts.
+- Untrimmed and trimmed stock.
+- Rack and sublocation management.
+- Internal Production Transfer Notes (PTNs).
+- In-house employees.
+- In-house piece-rate vendors.
+- Outsourced vendors.
+- Production planning.
+- Workstation scheduling.
+- Shift-wise job orders.
+- Printed production documents.
+- Outsourced vendor job orders.
+- Outward Gate Passes (OGPs).
+- Inward Gate Passes (IGPs).
+- Quality control.
+- Rework and repeated QC inspections.
+- Vendor piece-rate earnings and payments.
+- Employee labour-cost allocation.
+- Product costing.
+- Monthly stocktaking and reconciliation.
+- Barcode and QR-code scanning.
+- Management dashboards and reports.
+
+This must be a real transaction-based application, not merely a collection of forms, spreadsheets, and dashboards.
+
+2. MANDATORY FIRST STEP: INSPECT BEFORE CHANGING ANYTHING
+
+Before modifying files, installing dependencies, creating databases, deploying services, or changing existing infrastructure:
+
+1. Inspect the current project repository and its files.
+2. Identify the current technology stack, if an existing project is present.
+3. Inspect the available deployment environment and constraints.
+4. Identify existing services, ports, environment variables, databases, and deployment conventions where access is authorized.
+5. Never expose credentials, tokens, passwords, database URLs, or other secrets in logs, screenshots, or reports.
+6. Do not overwrite, delete, or modify existing working applications or services.
+7. Do not assume that a database, framework, hosting service, or authentication provider is already configured.
+8. Identify missing information and technical risks.
+
+If no existing repository is available, propose an appropriate project structure.
+
+Approval gate
+
+Your first deliverable must be a written implementation plan containing:
+
+- Recommended technology stack and justification.
+- Application architecture.
+- Database design.
+- Proposed modules and screens.
+- Inventory transaction model.
+- Production-planning model.
+- QC and rework model.
+- Vendor payment model.
+- Employee labour-cost allocation.
+- Product-costing method.
+- Authentication and permissions.
+- Barcode/QR approach.
+- Reporting strategy.
+- Testing strategy.
+- Deployment and backup strategy.
+- Phased implementation schedule.
+- Known limitations and unresolved assumptions.
+
+STOP after presenting this plan.
+
+Do not implement anything until the user explicitly approves the plan.
+
+After approval, implement in small, reviewable phases. Request approval before major architectural changes or destructive operations.
+
+3. TECHNOLOGY AND DEPLOYMENT REQUIREMENTS
+
+The application must be a separate web application with its own database.
+
+It must not depend on Manager.io, Odoo, ERPNext, or another ERP for its core operation.
+
+The coding agent may recommend the best technology after inspection.
+
+Prefer PostgreSQL for the primary relational database unless a compelling technical reason supports another choice.
+
+Evaluate an appropriate modern frontend and backend framework. Explain the trade-offs before implementation.
+
+Requirements:
+
+- Responsive desktop and mobile interface.
+- Multiple simultaneous users.
+- Role-based access control.
+- Secure authentication.
+- Transaction-safe inventory operations.
+- Reliable database constraints.
+- Audit history.
+- Search, filtering, pagination, and export.
+- Barcode and QR-code support.
+- Printable documents.
+- Excel import and export.
+- Docker-compatible deployment.
+- Configurable application URL and environment.
+- Database backup and recovery procedures.
+- Secure LAN-first deployment, with remote access supported later.
+
+Do not expose the application publicly by default.
+
+Do not store credentials in source code.
+
+Use environment variables or an appropriate secret-management mechanism.
+
+4. CORE BUSINESS ENTITIES
+
+Create a normalized, maintainable data model.
+
+At minimum, evaluate the need for the following entities:
+
+- Company or business configuration.
+- Users and roles.
+- Items.
+- Item codes and units of measurement.
+- Item categories.
+- Item production stages.
+- Item routing and operations.
+- Item-specific baseline manufacturing costs.
+- Trimming rates.
+- Workstations.
+- Shifts.
+- Employees.
+- In-house vendors.
+- Outsourced vendors.
+- Vendor workforce capacity.
+- Physical locations.
+- Racks, shelves, and bins.
+- Inventory transactions.
+- PTN documents.
+- OGP documents.
+- IGP documents.
+- Production plans.
+- Work orders.
+- Work-order assignments.
+- Production entries.
+- Downtime and delay records.
+- QC inspections.
+- QC rejection reasons.
+- Rework orders.
+- Vendor earnings.
+- Vendor payment batches.
+- Employee salary-cost records.
+- Labour-cost allocations.
+- Stock counts.
+- Stock-count variances.
+- Stock adjustments.
+- Audit events.
+
+Use appropriate foreign keys, indexes, uniqueness constraints, and database transactions.
+
+Do not store all business information in one large table or in unstructured JSON fields when proper relational tables are more appropriate.
+
+5. ITEM MASTER AND PRODUCTION STAGES
+
+Every item must have:
+
+- Unique item code.
+- Description.
+- Unit of measurement.
+- Active/inactive status.
+- Optional barcode or QR code.
+- Baseline manufacturing cost before trimming.
+- Expected production capacity in pieces per hour.
+- Optional workstation-specific production capacity.
+- Applicable trimming rate or rates.
+- QC requirements.
+- Rework rules.
+- Production-stage information.
+
+The user has specified separate item codes for untrimmed and trimmed items.
+
+For example:
+
+- MLD-001: Plastic Housing A — Untrimmed.
+- TRM-001: Plastic Housing A — Trimmed.
+
+The application must support relationships between the untrimmed item, intermediate items where needed, and the final trimmed item.
+
+Do not assume that all products have the same number of stages.
+
+Some products may require one trimming stage; others may pass through several stages.
+
+Important rate rule
+
+A trimming rate is a financial amount per piece.
+
+Expected production capacity is a production quantity per hour.
+
+These are two separate concepts.
+
+For example:
+
+- Trimming rate: Rs. 2 per piece.
+- Expected production: 120 pieces per hour.
+
+Never confuse these values.
+
+Stage versus chargeable operation
+
+Production stages describe the progress of an item toward its final state.
+
+A stage transition must not automatically create a trimming charge.
+
+Only actual, recorded, chargeable work operations should create cost or payment entries according to the configured rules.
+
+Support item-specific routing and operation-level tracking where required.
+
+6. PEOPLE AND WORKER CATEGORIES
+
+Support three distinct categories.
+
+A. In-house vendors
+
+These people work at company workstations.
+
+Track:
+
+- Name and code.
+- Active status.
+- Assigned workstation.
+- Shift.
+- Item and operation.
+- Production targets.
+- Actual output.
+- Applicable piece rate.
+- QC-approved quantities.
+- Earnings.
+- Payment approvals.
+- Actual payments.
+- Outstanding payable balance.
+
+B. Outsourced vendors
+
+These vendors receive material from the company and process it outside the premises.
+
+Track:
+
+- Vendor name and code.
+- Contact information.
+- Available workforce count.
+- Available working hours.
+- Expected production capacity.
+- Item-specific capacity where configured.
+- Current outstanding material.
+- Open job orders.
+- OGP and IGP history.
+- QC results.
+- Rework quantities.
+- Applicable piece rates.
+- Earnings and payment ledger.
+
+C. Employees
+
+Employees perform production work, but their monthly salary payments are outside this application's scope.
+
+Track:
+
+- Employee code and name.
+- Active status.
+- Assigned workstation.
+- Shift.
+- Production work.
+- Planned versus actual output.
+- Downtime and delay reasons.
+- QC acceptance and rejection.
+- Monthly salary amount for costing.
+- Allocated labour cost.
+
+Do not create employee salary payment transactions or employee vendor-payable ledgers.
+
+Employee labour costs must still be included in production-cost reports.
+
+7. LOCATIONS AND STOCK STRUCTURE
+
+Implement a configurable hierarchical location structure.
+
+Example:
+
+Company
+
+- Molding Department.
+- Main Trimming Store.
+  - Untrimmed Stock.
+    - Rack A.
+      - Shelf A-01.
+      - Shelf A-02.
+  - Trimmed Stock.
+    - Rack B.
+      - Shelf B-01.
+  - QC Holding.
+  - QC Rejected.
+  - Rework Holding.
+  - Packing.
+  - Dispatch.
+
+Vendor and employee stock must be represented through appropriate accountable locations or stock-ownership dimensions.
+
+The system must distinguish:
+
+- Physical location.
+- Item.
+- Processing status.
+- Responsible vendor or employee.
+- Quantity.
+- Relevant work order and transaction references.
+- QC status.
+
+Users must be able to create, edit, deactivate, and organize locations without changing application code.
+
+Prevent the same physical quantity from being counted twice in stock totals.
+
+Opening balances
+
+Allow opening balances for:
+
+- Every item at each physical location.
+- Stock held by each in-house vendor.
+- Stock held by each employee.
+- Stock held by outsourced vendors.
+- Untrimmed stock.
+- Trimmed stock.
+- QC-pending stock.
+- Rejected and rework stock.
+- Approved stock.
+
+Each opening entry must include an effective date, source reference, quantity, and authorized approval.
+
+Opening balances must create auditable ledger transactions.
+
+8. INVENTORY TRANSACTION ENGINE
+
+Inventory must be transaction-based.
+
+Never allow ordinary users to silently overwrite calculated stock balances.
+
+Stock balances must be derived from validated transactions.
+
+Support:
+
+- Receipts.
+- Issues.
+- Internal transfers.
+- Production consumption.
+- Production returns.
+- QC transfers.
+- Rework transfers.
+- Approved-stock transfers.
+- Vendor returns.
+- Stock adjustments.
+- Opening balances.
+- Reversals and corrections.
+
+Every stock transaction must record:
+
+- Transaction ID.
+- Transaction type.
+- Date and time.
+- Item.
+- Quantity.
+- Source location.
+- Destination location.
+- Person responsible.
+- Reference document.
+- Status.
+- User who created it.
+- User who posted or approved it.
+- Audit timestamps.
+
+Use database transactions to ensure that related stock movements succeed or fail together.
+
+Prevent negative stock by default. Exceptions must be explicitly authorized and auditable if the business elects to permit them.
+
+9. PTN — PRODUCTION TRANSFER NOTE
+
+PTN means Production Transfer Note.
+
+Every internal stock movement must be recorded. The application must require a PTN for every internal material movement.
+
+Examples:
+
+- Molding to trimming store.
+- Trimming store to workstation.
+- Workstation to store.
+- Workstation to QC.
+- QC to rework.
+- Rework to workstation.
+- QC-approved stock to packing.
+- Packing to another authorized location.
+
+A PTN must support:
+
+- Automatically generated sequential number.
+- Transaction date and time.
+- Source location.
+- Destination location.
+- Item.
+- Quantity.
+- Production stage.
+- Workstation, where relevant.
+- Assigned person, where relevant.
+- Related work order.
+- Reason for movement.
+- Remarks.
+- Prepared-by user.
+- Approval information.
+- QR code or barcode.
+- Printable document.
+
+Support multiple items on a PTN when appropriate.
+
+A PTN must not duplicate physical stock. It transfers stock between locations or accountable stock categories.
+
+A movement from molding to trimming store must record the receipt and destination correctly.
+
+A movement from store to workstation must reduce available store stock and increase stock assigned to that workstation or production order.
+
+A return must reverse the accountable movement appropriately.
+
+Implement configurable approval rules. Routine movements may be posted by authorized users; selected movements and adjustments may require supervisor approval.
+
+10. OGP AND IGP
+
+OGP — Outward Gate Pass
+
+Use OGP primarily for outsourced material issues.
+
+Each OGP must support:
+
+- Automatically generated number.
+- Optional external/custom number.
+- Issue date.
+- Outsourced vendor.
+- Item.
+- Quantity issued.
+- Applicable rate per piece.
+- Related vendor job order.
+- Expected return date.
+- Remarks.
+- Prepared-by and approved-by information.
+- Printable document.
+- QR code.
+
+Prevent duplicate OGP numbers within the relevant numbering scope.
+
+IGP — Inward Gate Pass
+
+Each IGP must support:
+
+- Automatically generated number.
+- Optional external/custom number.
+- Vendor.
+- Return date.
+- Related OGP.
+- Item.
+- Quantity returned.
+- QC status.
+- Receiving location.
+- Remarks.
+- User who recorded the return.
+- Printable document.
+- QR code.
+
+Allow multiple partial returns against the same OGP.
+
+Do not permit returns exceeding the outstanding issued quantity unless a manager authorizes and records the exceptional case.
+
+The system must distinguish:
+
+- Quantity issued.
+- Quantity physically returned.
+- Quantity accepted by QC.
+- Quantity rejected.
+- Quantity awaiting inspection.
+- Quantity awaiting rework.
+- Quantity still held by the vendor.
+
+11. PRODUCTION PLANNING
+
+The system must support workstation-wise planning for employees and in-house vendors.
+
+Initially support workstations WS-01 through WS-70, with the ability to add, rename, deactivate, and configure additional workstations.
+
+Planning inputs
+
+The planner must see:
+
+- Available untrimmed stock.
+- Stock reserved for existing work orders.
+- Item.
+- Applicable production stage.
+- Workstation.
+- Assigned person.
+- Shift.
+- Net shift hours.
+- Expected production capacity in pieces per hour.
+- Planned quantity.
+- Outstanding work.
+- Availability and downtime.
+- Current QC and rework backlog.
+
+Production target
+
+Calculate the suggested production target using:
+
+Expected pieces per hour × available productive hours.
+
+The user must be able to override the suggested quantity with an appropriate reason.
+
+Stock-shortage behavior
+
+The planner chooses how to handle insufficient stock.
+
+The application must clearly show shortages and must never reserve more physical stock than is available.
+
+Allow a production plan to express demand greater than current availability, but flag the shortage.
+
+Assignment rules
+
+Prefer one item per workstation per shift.
+
+Prevent accidental double assignment of the same physical stock.
+
+Normally permit one person per workstation per shift, but allow authorized exceptions.
+
+Permit the same person to work at different workstations in different non-overlapping shifts.
+
+Track employee and workstation availability.
+
+Shift configuration
+
+Support configurable shifts with:
+
+- Name.
+- Start time.
+- End time.
+- Break duration.
+- Net working hours.
+- Working days.
+- Effective date.
+
+Support shifts that cross midnight.
+
+Outsourced vendor planning
+
+Record the vendor's workforce count and available working hours.
+
+Calculate suggested capacity from configured item/operation capacity and available worker-hours.
+
+Allow multiple open job orders for a vendor.
+
+Show outstanding quantities, available capacity, overdue orders, and historical performance.
+
+12. INTERNAL WORK ORDERS AND PRINTED SHIFT SHEETS
+
+Generate a separate work order for each workstation, shift, item, and assigned production task.
+
+A work order must contain:
+
+- Unique work order number.
+- Date.
+- Shift.
+- Workstation.
+- Assigned employee or in-house vendor.
+- Item code and description.
+- Production stage or operation.
+- Source PTN reference.
+- Quantity issued.
+- Planned production.
+- Expected pieces per hour.
+- Start and finish times.
+- Actual output.
+- Quantity returned.
+- Quantity sent to QC.
+- Quantity rejected.
+- Quantity moved to rework.
+- Closing balance.
+- Downtime.
+- Delay reasons.
+- Operator remarks.
+- Operator signature.
+- Supervisor verification.
+- QR code.
+
+Generate a printer-friendly form for manual shift reporting.
+
+Allow supervisors to enter completed paper job orders into the application.
+
+Support multiple production entries during a shift and final shift closing.
+
+A work order may be closed at shift end with outstanding material transferred to a subsequent work order, or it may remain open when authorized.
+
+The system must preserve the relationship between original and subsequent orders.
+
+A shift closing must reconcile all material quantities.
+
+Do not automatically mark a work order fully completed merely because the shift ended.
+
+13. OUTSOURCED VENDOR JOB ORDERS
+
+One outsourced vendor job order may contain multiple items.
+
+Each item must have its own:
+
+- Item code.
+- Quantity issued.
+- Applicable rate.
+- Returned quantity.
+- QC-approved quantity.
+- Rejected quantity.
+- Outstanding quantity.
+- Rework quantity.
+- Payment eligibility.
+
+An OGP may be associated with the relevant vendor job order.
+
+Allow multiple partial IGP returns on different dates.
+
+Generate a printable vendor job order that the vendor can carry away.
+
+The printed document must include a QR code to retrieve the order when returned.
+
+When the vendor returns, the operator scans or searches for the job order and enters:
+
+- Return date.
+- IGP number.
+- Item.
+- Quantity returned.
+- QC-passed quantity, when inspection has occurred.
+- QC-rejected quantity, when inspection has occurred.
+- Remarks.
+- Rework requirements.
+
+Record every return separately.
+
+Support status transitions such as:
+
+Draft → Issued → In Progress → Partially Returned → QC Pending → Rework Required → Completed.
+
+Statuses must reflect the actual transaction state, not merely the operator's selection.
+
+A job order is not complete while material remains outstanding or required QC/rework remains unresolved.
+
+14. QC MANAGEMENT
+
+QC requirements must be configurable by item and production operation.
+
+Where QC is required, material must not enter approved stock until inspection is completed and authorized.
+
+Record:
+
+- Inspection number.
+- Date and time.
+- Item.
+- Quantity inspected.
+- Quantity accepted.
+- Quantity rejected.
+- Related work order.
+- Related IGP or PTN.
+- Inspector.
+- Authorized approver, where required.
+- Rejection reasons.
+- Comments.
+- Optional photographs.
+- Subsequent destination.
+
+Acceptance plus rejection must equal the inspected quantity.
+
+Prevent duplicate inspection entries from approving the same physical quantity twice.
+
+Support authorized QC staff and production supervisors, according to permissions.
+
+Preserve inspection history permanently.
+
+15. REWORK MANAGEMENT
+
+Rejected material must first enter the designated rework location.
+
+The normal workflow is:
+
+QC Rejected → Rework Location → Rework PTN → Rework Job Order → Rework Completed → QC Inspection → Approved Stock or Rework Location.
+
+Allow the rework order to be assigned to:
+
+- An employee.
+- An in-house vendor.
+- An outsourced vendor.
+
+The application must retain the complete relationship between:
+
+- Original job order.
+- Original trimming operation.
+- Original worker or vendor.
+- Original OGP/IGP, where relevant.
+- QC rejection.
+- Rework PTN.
+- Rework job order.
+- Subsequent production.
+- Subsequent QC inspections.
+- Final outcome.
+
+Support repeated rework cycles.
+
+Never overwrite the original production or QC records.
+
+Rework payment rules
+
+Payment rules must be configurable by item, operation, person/vendor, and applicable arrangement.
+
+Record every actual trimming operation.
+
+Do not automatically create a new payable amount simply because a rejected part has been re-trimmed.
+
+Calculate eligibility according to the configured rule and applicable QC outcome.
+
+Support manager approval for exceptional arrangements.
+
+Prevent duplicate payment for the same chargeable operation.
+
+Record rework costs separately from original trimming costs.
+
+16. VENDOR EARNINGS AND PAYMENT LEDGER
+
+Maintain a separate payment ledger for in-house piece-rate vendors and outsourced vendors.
+
+The ledger must distinguish earned amounts, approved amounts, actual payments, adjustments, and outstanding balances.
+
+For each eligible operation, record:
+
+- Vendor.
+- Item.
+- Operation.
+- Job order.
+- Applicable rate.
+- Quantity eligible for payment.
+- Calculated amount.
+- QC evidence.
+- Eligibility rule.
+- Approval status.
+- Approver.
+- Payment reference.
+
+Payment workflow
+
+Calculate eligible earnings automatically.
+
+Post earnings to the relevant earnings ledger according to the configured rules.
+
+Require authorized approval before actual payments are recorded.
+
+Support:
+
+- Opening payable balance.
+- Earned amounts.
+- Approved earnings.
+- Actual payments.
+- Adjustments.
+- Reversals.
+- Outstanding balance.
+
+Prevent duplicate payment posting.
+
+Payment approval must not silently alter inventory or QC history.
+
+Vendor payments are financial settlements of previously recognized obligations, not additional production costs.
+
+17. EMPLOYEE LABOUR COSTING
+
+Employee salary payments are outside this application's scope.
+
+Record the monthly salary amount necessary for product-cost allocation.
+
+Support configurable labour-allocation methods:
+
+- Hour-based.
+- Production-based.
+- Hybrid.
+
+Allow authorized users to configure the allocation method and effective period.
+
+Support the allocation of employee labour costs to items and operations.
+
+Where appropriate, distinguish:
+
+- Productive time.
+- Idle time.
+- Downtime.
+- Rework time.
+- Other allocated labour time.
+
+Do not assume that all monthly salary must be allocated only to accepted production.
+
+Preserve the configured treatment of idle time and rework in cost reports.
+
+Prevent employee salary records from creating vendor-payment transactions.
+
+18. PRODUCT COSTING
+
+The baseline manufacturing cost represents the item's cost before trimming.
+
+Calculate the item's cost by adding the applicable costs of its recorded production operations and allocated employee labour.
+
+Show separate components for:
+
+- Baseline manufacturing cost.
+- In-house vendor trimming.
+- Outsourced trimming.
+- Employee labour allocation.
+- Rework costs.
+- Other configured production costs.
+
+Support item-wise and date-wise cost history.
+
+Show both:
+
+1. Cost per accepted finished unit.
+2. Total costs incurred during the selected period.
+
+Do not double-count costs.
+
+A vendor payment must not create a second production expense when the associated trimming cost has already been recognized.
+
+Where rejected or reworked material incurs costs, preserve those costs and show the configured allocation method.
+
+Clearly distinguish estimated costs from finalized actual costs.
+
+19. MONTHLY STOCKTAKING AND RECONCILIATION
+
+This is a mandatory module.
+
+The company performs monthly stocktaking and must maintain a complete history of discrepancies and corrections.
+
+Support:
+
+- Monthly stock-count sessions.
+- Count date and effective period.
+- Location-wise counts.
+- Item-wise counts.
+- Rack and bin counts.
+- Vendor-held stock counts.
+- Employee-held stock counts where required.
+- Untrimmed, trimmed, QC-pending, and rework stock.
+- Expected book quantity.
+- Physically counted quantity.
+- Variance quantity.
+- Variance value, where cost data is available.
+- Reason for discrepancy.
+- Investigator.
+- Approver.
+- Adjustment reference.
+- Before-and-after balances.
+- Complete audit trail.
+
+Allow blind counts, where the counter does not see the system quantity, if configured.
+
+Freeze or appropriately snapshot the expected quantity at the time of the stock-count session.
+
+Define how transactions occurring during stocktaking affect the count.
+
+Do not silently overwrite book balances.
+
+Every approved stock adjustment must create a corresponding inventory transaction and retain its reason and approval history.
+
+Support monthly comparison reports showing:
+
+- Previous closing balance.
+- Current opening balance.
+- Receipts.
+- Issues.
+- Transfers.
+- Production consumption and returns.
+- QC and rework movements.
+- Approved adjustments.
+- Expected closing balance.
+- Physical closing balance.
+- Variance.
+
+20. BARCODE AND QR-CODE SUPPORT
+
+Support scanning for:
+
+- Items.
+- Racks and locations.
+- PTNs.
+- OGPs.
+- IGPs.
+- Internal work orders.
+- Outsourced vendor job orders.
+- Rework orders.
+- Stock-count records.
+
+Use standard QR codes and compatible barcode formats where appropriate.
+
+Support smartphone camera scanning and USB scanners when feasible.
+
+Scanning must retrieve the correct record and enforce normal authorization rules.
+
+A QR code must not provide unauthorized access or permit a user to change records without authentication.
+
+Support quantity-by-container tracking where useful.
+
+Do not require individual serial numbers for every physical part unless explicitly configured for an item.
+
+21. REPORTS AND DASHBOARDS
+
+Provide filters for date, shift, item, production stage, workstation, vendor, employee, operation, location, and QC status wherever relevant.
+
+Implement these report groups:
+
+1. Current stock by item, location, rack, and status.
+2. Stock held by each employee and vendor.
+3. Daily molding receipts.
+4. PTN history.
+5. OGP/IGP history.
+6. Outstanding vendor stock.
+7. Work orders in progress.
+8. Planned versus actual production.
+9. Production efficiency by workstation.
+10. Production by employee and shift.
+11. Production by in-house vendor.
+12. Outsourced vendor performance.
+13. Hourly production performance.
+14. Delay duration and delay reasons.
+15. QC acceptance and rejection.
+16. Rework quantities and outcomes.
+17. First-pass quality rate.
+18. Repeated QC rejection.
+19. Vendor earnings and payments.
+20. Outstanding vendor balances.
+21. Employee labour-cost allocation.
+22. Item-wise total production cost.
+23. Cost history over time.
+24. Monthly stock-count variances.
+25. Inventory adjustments and approval history.
+
+Production performance calculations
+
+Use clearly defined formulas.
+
+Production attainment:
+
+Actual quantity trimmed ÷ Planned production quantity × 100.
+
+First-pass quality rate:
+
+Quantity accepted on first inspection ÷ Quantity inspected × 100.
+
+Good-output efficiency:
+
+Quantity accepted by QC ÷ Planned production quantity × 100.
+
+Prevent division by zero and show not-applicable values appropriately.
+
+Report rejected and reworked quantities separately.
+
+Do not confuse financial cost per piece with expected production pieces per hour.
+
+All reports must be exportable to Excel or CSV as appropriate.
+
+22. USER ROLES AND PERMISSIONS
+
+Support these roles:
+
+- Administrator.
+- Store operator.
+- Production planner.
+- Production supervisor.
+- QC inspector.
+- Accounts user.
+- Manager/approver.
+- Read-only management user.
+
+Allow users to have multiple roles.
+
+Enforce authorization on the server, not merely by hiding interface buttons.
+
+Support configurable approval limits for:
+
+- PTNs.
+- Stock adjustments.
+- QC exceptions.
+- Rework payment exceptions.
+- Vendor earnings.
+- Actual vendor payments.
+- Opening balances.
+- Stock-count variances.
+
+Use an auditable correction and reversal process.
+
+Posted transactions must not be silently deleted.
+
+23. AUDIT AND DATA INTEGRITY
+
+Maintain audit events for important actions, including:
+
+- Record creation.
+- Record modification.
+- Approval.
+- Rejection.
+- Posting.
+- Reversal.
+- Stock adjustment.
+- Payment approval.
+- Payment recording.
+- Configuration changes.
+- Permission changes.
+
+Record the user, timestamp, affected record, action, and appropriate before-and-after values.
+
+Never record passwords, access tokens, or other secrets in the audit log.
+
+Use database constraints and transaction-safe processing to prevent:
+
+- Duplicate document numbers.
+- Duplicate stock movements.
+- Duplicate QC approvals.
+- Duplicate earnings.
+- Duplicate payments.
+- Invalid quantities.
+- Negative stock without authorized exception.
+- Concurrent allocation of the same physical stock.
+
+24. DATA IMPORT AND INITIALIZATION
+
+Provide controlled imports for:
+
+- Item masters.
+- Employees.
+- Vendors.
+- Workstations.
+- Shifts.
+- Locations and racks.
+- Baseline costs.
+- Production targets.
+- Trimming rates.
+- Opening stock.
+- Opening vendor payable balances.
+- Existing production history, where practical.
+
+Use import templates.
+
+Validate data before posting.
+
+Provide a preview, error report, duplicate detection, and an approval step.
+
+Never silently skip invalid rows or overwrite existing balances.
+
+25. TESTING REQUIREMENTS
+
+Create automated tests for all critical business rules.
+
+At minimum, test these scenarios:
+
+Scenario A: Internal trimming
+
+- Receive 1,000 untrimmed pieces.
+- Store them in a designated rack.
+- Issue 400 to a workstation through a PTN.
+- Record 350 trimmed pieces.
+- Send the returned pieces to QC.
+- Accept 300 and reject 50.
+- Verify the remaining 50 issued pieces and all rejected quantities are accounted for correctly.
+- Verify stock is not duplicated.
+
+Scenario B: Outsourced partial returns
+
+- Issue 500 pieces through an OGP.
+- Record returns of 300 and 200 on different dates.
+- Link each return to the correct IGP and job order.
+- Verify the outstanding vendor stock after each transaction.
+- Inspect and reject some quantities.
+- Verify the job order remains unresolved until required QC and rework are complete.
+
+Scenario C: Rework
+
+- Reject material during QC.
+- Move it to the rework location.
+- Generate a rework order.
+- Assign it to a different person.
+- Complete the rework.
+- Perform another QC inspection.
+- Verify original and subsequent records remain linked.
+- Verify payment rules are applied correctly.
+
+Scenario D: Payment integrity
+
+- Record a chargeable trimming operation.
+- Calculate earnings.
+- Approve earnings.
+- Record partial and final payments.
+- Verify outstanding balances.
+- Attempt duplicate payment posting and verify it is prevented.
+
+Scenario E: Production planning
+
+- Allocate untrimmed stock to multiple workstations.
+- Attempt to reserve the same stock twice.
+- Verify the application prevents over-allocation.
+- Verify production targets use pieces per hour and available productive time.
+- Record downtime and reasons.
+- Verify production attainment and QC metrics.
+
+Scenario F: Monthly stocktaking
+
+- Snapshot book stock.
+- Enter a physical count.
+- Record a discrepancy.
+- Investigate and approve an adjustment.
+- Verify the inventory ledger and reports reflect the adjustment.
+- Verify the complete before-and-after history remains available.
+
+Scenario G: Concurrent transactions
+
+Simulate two users attempting to issue or reserve the same stock simultaneously.
+
+Verify that the application prevents double allocation and preserves correct balances.
+
+Scenario H: Authorization
+
+Verify that users cannot perform unauthorized approvals, payments, stock adjustments, or QC overrides.
+
+Scenario I: Recovery
+
+Verify that database backups can be restored and transaction consistency is preserved.
+
+26. IMPLEMENTATION PHASES
+
+After the initial plan is approved, implement in phases.
+
+Phase 1: Project foundation, authentication, users, roles, database, and audit framework.
+
+Phase 2: Item master, locations, racks, opening balances, and inventory transaction engine.
+
+Phase 3: PTN documents and internal stock movements.
+
+Phase 4: Workstations, shifts, employees, in-house vendors, production planning, and internal work orders.
+
+Phase 5: Outsourced vendors, workforce capacity, OGP, IGP, and vendor job orders.
+
+Phase 6: QC, rejection handling, rework locations, and rework orders.
+
+Phase 7: Vendor earnings, approvals, payment ledger, and employee labour costing.
+
+Phase 8: Product costing and cost-history reports.
+
+Phase 9: Monthly stocktaking and reconciliation.
+
+Phase 10: QR/barcode scanning, printable documents, dashboards, and exports.
+
+Phase 11: Automated testing, security review, performance checks, backup validation, and deployment preparation.
+
+Each phase must include:
+
+- Implemented functionality.
+- Database migrations.
+- Tests.
+- Known limitations.
+- User instructions.
+- Review and approval checkpoint.
+
+Do not skip ahead by generating a large amount of untested code.
+
+27. ACCEPTANCE CRITERIA
+
+The application is not complete until:
+
+- Stock balances reconcile to posted transactions.
+- Every internal movement has the required PTN.
+- Outsourced issues and returns are linked through OGP/IGP records.
+- Partial returns work correctly.
+- Vendor-held stock is visible and reconcilable.
+- Production plans respect stock reservations.
+- Work orders support printed and electronic workflows.
+- Shift closing reconciles material.
+- QC acceptance and rejection are correctly accounted for.
+- Rework history is preserved across multiple cycles.
+- Vendor earnings follow configured eligibility rules.
+- Actual payments cannot be duplicated.
+- Employee labour cost is allocated without creating employee payment obligations.
+- Product costing avoids double-counting.
+- Monthly stocktaking produces auditable variances and adjustments.
+- Reports filter by the required production dimensions.
+- Role-based permissions are enforced.
+- Automated tests pass.
+- Backup and restore procedures are documented and tested.
+- Deployment and operational documentation are complete.
+
+28. FINAL INSTRUCTION
+
+Begin by inspecting the available repository and environment.
+
+Do not modify anything.
+
+Return the implementation plan, architecture recommendation, database design, transaction-flow design, major risks, and phased delivery proposal.
+
+Explicitly identify any business rules that remain ambiguous.
+
+Wait for the user's approval before implementing the first phase.
+
+Never expose credentials or modify unrelated working services.
+
+Build this system as a reliable manufacturing operations application whose primary purpose is accurate stock accountability, production traceability, quality control, vendor settlement, and product costing.

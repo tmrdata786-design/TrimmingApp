@@ -1,0 +1,119 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Manufacturing Master Entities & Reference Data
+    match /items/{itemId} {
+      allow read: if isSignedIn() && isValidId(itemId);
+      allow write: if isSignedIn() && isValidId(itemId);
+    }
+
+    match /locations/{locationId} {
+      allow read: if isSignedIn() && isValidId(locationId);
+      allow write: if isSignedIn() && isValidId(locationId);
+    }
+
+    match /workstations/{workstationId} {
+      allow read: if isSignedIn() && isValidId(workstationId);
+      allow write: if isSignedIn() && isValidId(workstationId);
+    }
+
+    match /shifts/{shiftId} {
+      allow read: if isSignedIn() && isValidId(shiftId);
+      allow write: if isSignedIn() && isValidId(shiftId);
+    }
+
+    match /workers/{workerId} {
+      allow read: if isSignedIn() && isValidId(workerId);
+      allow write: if isSignedIn() && isValidId(workerId);
+    }
+
+    match /outsourced_vendors/{vendorId} {
+      allow read: if isSignedIn() && isValidId(vendorId);
+      allow write: if isSignedIn() && isValidId(vendorId);
+    }
+
+    // Material State & Ledger
+    match /stock_balances/{balanceId} {
+      allow read: if isSignedIn() && isValidId(balanceId);
+      allow write: if isSignedIn() && isValidId(balanceId);
+    }
+
+    match /inventory_transactions/{transactionId} {
+      allow read: if isSignedIn() && isValidId(transactionId);
+      allow create: if isSignedIn() && isValidId(transactionId);
+      // Ledger records are immutable once posted
+      allow update, delete: if false;
+    }
+
+    // Operational Documents & Transfer Notes
+    match /ptn_documents/{ptnId} {
+      allow read: if isSignedIn() && isValidId(ptnId);
+      allow write: if isSignedIn() && isValidId(ptnId);
+    }
+
+    match /ogp_documents/{ogpId} {
+      allow read: if isSignedIn() && isValidId(ogpId);
+      allow write: if isSignedIn() && isValidId(ogpId);
+    }
+
+    match /igp_documents/{igpId} {
+      allow read: if isSignedIn() && isValidId(igpId);
+      allow write: if isSignedIn() && isValidId(igpId);
+    }
+
+    match /work_orders/{workOrderId} {
+      allow read: if isSignedIn() && isValidId(workOrderId);
+      allow write: if isSignedIn() && isValidId(workOrderId);
+    }
+
+    // Quality Control & Rework
+    match /qc_inspections/{qcId} {
+      allow read: if isSignedIn() && isValidId(qcId);
+      allow write: if isSignedIn() && isValidId(qcId);
+    }
+
+    match /rework_orders/{reworkId} {
+      allow read: if isSignedIn() && isValidId(reworkId);
+      allow write: if isSignedIn() && isValidId(reworkId);
+    }
+
+    // Financial Ledgers & Settlements (PKR)
+    match /vendor_earnings/{earningId} {
+      allow read: if isSignedIn() && isValidId(earningId);
+      allow write: if isSignedIn() && isValidId(earningId);
+    }
+
+    match /vendor_payments/{paymentId} {
+      allow read: if isSignedIn() && isValidId(paymentId);
+      allow write: if isSignedIn() && isValidId(paymentId);
+    }
+
+    // Stocktaking & Discrepancies
+    match /stocktaking_sessions/{sessionId} {
+      allow read: if isSignedIn() && isValidId(sessionId);
+      allow write: if isSignedIn() && isValidId(sessionId);
+    }
+
+    // Audit Event Trail
+    match /audit_events/{eventId} {
+      allow read: if isSignedIn() && isValidId(eventId);
+      allow create: if isSignedIn() && isValidId(eventId);
+      allow update, delete: if false; // Tamper-proof audit
+    }
+  }
+}

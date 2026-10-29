@@ -1,0 +1,399 @@
+{
+  "entities": {
+    "Item": {
+      "title": "Item",
+      "description": "Item master record for raw moulded parts, intermediate stages, and finished trimmed components",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "itemCode": { "type": "string" },
+        "description": { "type": "string" },
+        "unitOfMeasure": { "type": "string" },
+        "category": { "type": "string" },
+        "parentItemId": { "type": "string" },
+        "baselineManufacturingCost": { "type": "number" },
+        "expectedCapacityPph": { "type": "number" },
+        "defaultTrimmingRate": { "type": "number" },
+        "qcRequired": { "type": "boolean" },
+        "reworkRule": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["itemCode", "description", "unitOfMeasure", "category", "baselineManufacturingCost", "defaultTrimmingRate"]
+    },
+    "Location": {
+      "title": "Location",
+      "description": "Physical warehouse location, rack, shelf, bin, or accountable station",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "parentLocationId": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["code", "name", "type"]
+    },
+    "StockBalance": {
+      "title": "StockBalance",
+      "description": "Current on-hand and reserved material quantities at a specific location and processing status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "locationId": { "type": "string" },
+        "itemId": { "type": "string" },
+        "status": { "type": "string" },
+        "quantityOnHand": { "type": "number" },
+        "quantityReserved": { "type": "number" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["locationId", "itemId", "status", "quantityOnHand"]
+    },
+    "InventoryTransaction": {
+      "title": "InventoryTransaction",
+      "description": "Immutable ledger record for every validated stock receipt, issue, transfer, or adjustment",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "transactionNumber": { "type": "string" },
+        "transactionType": { "type": "string" },
+        "itemId": { "type": "string" },
+        "quantity": { "type": "number" },
+        "sourceLocationId": { "type": "string" },
+        "destinationLocationId": { "type": "string" },
+        "referenceType": { "type": "string" },
+        "referenceId": { "type": "string" },
+        "responsiblePerson": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["transactionNumber", "transactionType", "itemId", "quantity", "sourceLocationId", "destinationLocationId"]
+    },
+    "PTNDocument": {
+      "title": "PTNDocument",
+      "description": "Production Transfer Note governing authorized internal material movement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ptnNumber": { "type": "string" },
+        "date": { "type": "string" },
+        "sourceLocationId": { "type": "string" },
+        "destinationLocationId": { "type": "string" },
+        "workstationId": { "type": "string" },
+        "assignedPersonId": { "type": "string" },
+        "items": { "type": "array" },
+        "status": { "type": "string" },
+        "preparedBy": { "type": "string" },
+        "approvedBy": { "type": "string" },
+        "remarks": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["ptnNumber", "sourceLocationId", "destinationLocationId", "items", "status"]
+    },
+    "Workstation": {
+      "title": "Workstation",
+      "description": "Trimming workstation on the plant floor (WS-01 through WS-70)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string" },
+        "capacityMultiplier": { "type": "number" }
+      },
+      "required": ["code", "name", "status"]
+    },
+    "Shift": {
+      "title": "Shift",
+      "description": "Configurable working shift timing",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "breakDurationMinutes": { "type": "number" },
+        "netWorkingHours": { "type": "number" }
+      },
+      "required": ["name", "startTime", "endTime", "netWorkingHours"]
+    },
+    "Worker": {
+      "title": "Worker",
+      "description": "In-house piece-rate vendor or salaried employee",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "monthlySalary": { "type": "number" },
+        "defaultPieceRate": { "type": "number" }
+      },
+      "required": ["code", "name", "type"]
+    },
+    "OutsourcedVendor": {
+      "title": "OutsourcedVendor",
+      "description": "External vendor processing trimming offsite",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "contact": { "type": "string" },
+        "workforceCount": { "type": "number" },
+        "availableDailyHours": { "type": "number" },
+        "currentOutstandingQty": { "type": "number" },
+        "outstandingPayablePkr": { "type": "number" }
+      },
+      "required": ["code", "name"]
+    },
+    "WorkOrder": {
+      "title": "WorkOrder",
+      "description": "Shift-wise workstation job order for internal production",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "workOrderNumber": { "type": "string" },
+        "date": { "type": "string" },
+        "shiftId": { "type": "string" },
+        "workstationId": { "type": "string" },
+        "assignedWorkerId": { "type": "string" },
+        "itemId": { "type": "string" },
+        "sourcePtnId": { "type": "string" },
+        "quantityIssued": { "type": "number" },
+        "plannedQuantity": { "type": "number" },
+        "actualTrimmedQuantity": { "type": "number" },
+        "quantitySentToQc": { "type": "number" },
+        "quantityReturnedUntrimmed": { "type": "number" },
+        "closingBalance": { "type": "number" },
+        "downtimeMinutes": { "type": "number" },
+        "delayReason": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["workOrderNumber", "date", "shiftId", "workstationId", "assignedWorkerId", "itemId", "quantityIssued", "plannedQuantity"]
+    },
+    "OGPDocument": {
+      "title": "OGPDocument",
+      "description": "Outward Gate Pass for material issued to outsourced vendor",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ogpNumber": { "type": "string" },
+        "issueDate": { "type": "string" },
+        "vendorId": { "type": "string" },
+        "items": { "type": "array" },
+        "totalIssuedQuantity": { "type": "number" },
+        "expectedReturnDate": { "type": "string" },
+        "status": { "type": "string" },
+        "preparedBy": { "type": "string" }
+      },
+      "required": ["ogpNumber", "issueDate", "vendorId", "items", "status"]
+    },
+    "IGPDocument": {
+      "title": "IGPDocument",
+      "description": "Inward Gate Pass for material returned from outsourced vendor",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "igpNumber": { "type": "string" },
+        "ogpId": { "type": "string" },
+        "vendorId": { "type": "string" },
+        "returnDate": { "type": "string" },
+        "items": { "type": "array" },
+        "totalReturnedQuantity": { "type": "number" },
+        "receivingLocationId": { "type": "string" },
+        "status": { "type": "string" },
+        "receivedBy": { "type": "string" }
+      },
+      "required": ["igpNumber", "ogpId", "vendorId", "returnDate", "items"]
+    },
+    "QCInspection": {
+      "title": "QCInspection",
+      "description": "Inspection record verifying trimmed quality and defect isolation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "inspectionNumber": { "type": "string" },
+        "date": { "type": "string" },
+        "referenceType": { "type": "string" },
+        "referenceId": { "type": "string" },
+        "itemId": { "type": "string" },
+        "quantityInspected": { "type": "number" },
+        "quantityAccepted": { "type": "number" },
+        "quantityRejected": { "type": "number" },
+        "rejectionReasons": { "type": "array" },
+        "inspector": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["inspectionNumber", "itemId", "quantityInspected", "quantityAccepted", "quantityRejected", "inspector"]
+    },
+    "ReworkOrder": {
+      "title": "ReworkOrder",
+      "description": "Rework job order tracking re-trimming of rejected material with full lineage",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "reworkOrderNumber": { "type": "string" },
+        "originalReferenceType": { "type": "string" },
+        "originalReferenceId": { "type": "string" },
+        "qcInspectionId": { "type": "string" },
+        "itemId": { "type": "string" },
+        "quantityToRework": { "type": "number" },
+        "assignedWorkerType": { "type": "string" },
+        "assignedWorkerId": { "type": "string" },
+        "paymentEligibility": { "type": "string" },
+        "approvedRatePkr": { "type": "number" },
+        "status": { "type": "string" },
+        "cycleNumber": { "type": "number" }
+      },
+      "required": ["reworkOrderNumber", "qcInspectionId", "itemId", "quantityToRework", "status"]
+    },
+    "VendorEarning": {
+      "title": "VendorEarning",
+      "description": "Piece-rate financial earning record derived from accepted QC quantities in PKR",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "vendorId": { "type": "string" },
+        "vendorType": { "type": "string" },
+        "referenceType": { "type": "string" },
+        "referenceId": { "type": "string" },
+        "itemId": { "type": "string" },
+        "quantityEligible": { "type": "number" },
+        "ratePerPiece": { "type": "number" },
+        "amountPkr": { "type": "number" },
+        "isApproved": { "type": "boolean" },
+        "paymentBatchId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["vendorId", "itemId", "quantityEligible", "ratePerPiece", "amountPkr"]
+    },
+    "VendorPayment": {
+      "title": "VendorPayment",
+      "description": "Actual financial disbursement batch settling vendor payable obligations in PKR",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "batchNumber": { "type": "string" },
+        "vendorId": { "type": "string" },
+        "paymentDate": { "type": "string" },
+        "amountPaidPkr": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "referenceNumber": { "type": "string" },
+        "notes": { "type": "string" },
+        "approvedBy": { "type": "string" }
+      },
+      "required": ["batchNumber", "vendorId", "paymentDate", "amountPaidPkr"]
+    },
+    "StocktakingSession": {
+      "title": "StocktakingSession",
+      "description": "Monthly physical inventory count and variance reconciliation session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sessionCode": { "type": "string" },
+        "countDate": { "type": "string" },
+        "status": { "type": "string" },
+        "isBlindCount": { "type": "boolean" },
+        "totalItemsCounted": { "type": "number" },
+        "totalDiscrepancyQty": { "type": "number" },
+        "totalVariancePkr": { "type": "number" },
+        "notes": { "type": "string" }
+      },
+      "required": ["sessionCode", "countDate", "status"]
+    },
+    "AuditEvent": {
+      "title": "AuditEvent",
+      "description": "Tamper-evident audit log for compliance and operational tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "user": { "type": "string" },
+        "action": { "type": "string" },
+        "entityType": { "type": "string" },
+        "entityId": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["timestamp", "user", "action", "entityType"]
+    }
+  },
+  "firestore": {
+    "/items/{itemId}": {
+      "schema": { "$ref": "Item" },
+      "description": "Item definitions, codes, baseline manufacturing costs, capacities, and trimming rates"
+    },
+    "/locations/{locationId}": {
+      "schema": { "$ref": "Location" },
+      "description": "Physical racks, shelves, bins, and accountable plant locations"
+    },
+    "/stock_balances/{balanceId}": {
+      "schema": { "$ref": "StockBalance" },
+      "description": "Current on-hand balances per location and processing status"
+    },
+    "/inventory_transactions/{transactionId}": {
+      "schema": { "$ref": "InventoryTransaction" },
+      "description": "Immutable ledger transactions for all stock movements and adjustments"
+    },
+    "/ptn_documents/{ptnId}": {
+      "schema": { "$ref": "PTNDocument" },
+      "description": "Production Transfer Notes for internal movements"
+    },
+    "/workstations/{workstationId}": {
+      "schema": { "$ref": "Workstation" },
+      "description": "Trimming workstations WS-01 through WS-70"
+    },
+    "/shifts/{shiftId}": {
+      "schema": { "$ref": "Shift" },
+      "description": "Working shift definitions and net hours"
+    },
+    "/workers/{workerId}": {
+      "schema": { "$ref": "Worker" },
+      "description": "In-house piece-rate vendors and salaried employees"
+    },
+    "/outsourced_vendors/{vendorId}": {
+      "schema": { "$ref": "OutsourcedVendor" },
+      "description": "Outsourced vendors and capacity profiles"
+    },
+    "/work_orders/{workOrderId}": {
+      "schema": { "$ref": "WorkOrder" },
+      "description": "Shift-wise internal work orders"
+    },
+    "/ogp_documents/{ogpId}": {
+      "schema": { "$ref": "OGPDocument" },
+      "description": "Outward Gate Passes for outsourced work"
+    },
+    "/igp_documents/{igpId}": {
+      "schema": { "$ref": "IGPDocument" },
+      "description": "Inward Gate Passes for vendor returns"
+    },
+    "/qc_inspections/{qcId}": {
+      "schema": { "$ref": "QCInspection" },
+      "description": "Quality control inspection records"
+    },
+    "/rework_orders/{reworkId}": {
+      "schema": { "$ref": "ReworkOrder" },
+      "description": "Rework job orders with upstream lineage"
+    },
+    "/vendor_earnings/{earningId}": {
+      "schema": { "$ref": "VendorEarning" },
+      "description": "Vendor piece-rate earnings in PKR"
+    },
+    "/vendor_payments/{paymentId}": {
+      "schema": { "$ref": "VendorPayment" },
+      "description": "Vendor payment disbursements in PKR"
+    },
+    "/stocktaking_sessions/{sessionId}": {
+      "schema": { "$ref": "StocktakingSession" },
+      "description": "Physical count and reconciliation sessions"
+    },
+    "/audit_events/{eventId}": {
+      "schema": { "$ref": "AuditEvent" },
+      "description": "Audit event records"
+    }
+  }
+}

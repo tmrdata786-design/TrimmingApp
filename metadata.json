@@ -1,0 +1,6 @@
+{
+  "name": "Trimming Production, Inventory, Quality Control & Cost Management System",
+  "description": "Enterprise-grade manufacturing execution, inventory tracking, PTN/OGP/IGP workflow, QC & rework management, vendor piece-rate settlement (PKR), and product costing system for plastic moulding trimming operations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
